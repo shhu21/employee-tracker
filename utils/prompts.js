@@ -1,3 +1,6 @@
+// User Prompts
+// const { deptList, roleList, employeeList } = require('./getLists');
+
 const initialPrompt = [
     {
         type: 'list',
@@ -8,7 +11,8 @@ const initialPrompt = [
             'View all roles',
             'View all employees',
             'Add a department',
-            'Add a role', 'Add an employee',
+            'Add a role',
+            'Add an employee',
             'Update an employee role',
             'Quit'
         ]
@@ -18,7 +22,7 @@ const initialPrompt = [
 const addDeptPrompt = [
     {
         type: 'input',
-        name: 'addDept',
+        name: 'dept',
         message: 'Enter the name of the department.',
         validate: input => {
             if (input) {
@@ -34,7 +38,7 @@ const addDeptPrompt = [
 const addRolePrompt = [
     {
         type: 'input',
-        name: 'addRole',
+        name: 'role',
         message: 'Enter the name of the role.',
         validate: input => {
             if (input) {
@@ -59,17 +63,10 @@ const addRolePrompt = [
         }
     },
     {
-        type: 'input',
+        type: 'list',
         name: 'dept',
         message: 'Enter the department of the role.',
-        validate: input => {
-            if (input) {
-                return true;
-            } else {
-                console.log('\nPlease enter the department of the role.');
-                return false;
-            }
-        }
+        choices: []
     }
 ];
 
@@ -100,7 +97,6 @@ const addEmployeePrompt = [
             }
         }
     },
-    // next two need the list from the db
     {
         type: 'list',
         name: 'role',
@@ -109,10 +105,25 @@ const addEmployeePrompt = [
     },
     {
         type: 'list',
-        name: 'role',
+        name: 'manager',
         message: 'Choose the employee\'s manager',
         choices: []
     }
 ];
 
-module.exports = { initialPrompt, addDeptPrompt, addRolePrompt, addEmployeePrompt };
+const updateEmployeePrompt = [
+    {
+        type: 'list',
+        name: 'employee',
+        message: 'Choose the employee to update',
+        choices: []
+    },
+    {
+        type: 'list',
+        name: 'role',
+        message: 'Choose the role of the employee',
+        choices: []
+    }
+]
+
+module.exports = { initialPrompt, addDeptPrompt, addRolePrompt, addEmployeePrompt, updateEmployeePrompt };
