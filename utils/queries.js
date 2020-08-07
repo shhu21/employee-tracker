@@ -33,75 +33,71 @@ const insertDept = (dept) => {
         (err, result) => {
             if (err) throw err;
     
-            console.log('Department successfully added.');
+            console.log('\nDepartment successfully added.');
     });
 }
 
 const insertRole = (role) => {
-    const deptId = connection.promise().query(`SELECT id FROM department
-                WHERE dept.name = ${role.dept};`,
-                (err, result) => {
-                    if (err) throw err;
-            
-                    return result[0].id;
-    });
-
-    connection.promise().query(`INSERT INTO role
-        VALUES (${role.role}, ${role.salary}, ${deptId});`,
+    connection.promise().query(`SELECT id FROM department
+        WHERE name = '${role.dept}';`,
         (err, result) => {
             if (err) throw err;
     
-            console.log('Role successfully added.');
+            connection.promise().query(`INSERT INTO role (title, salary, department_id)
+                VALUES ('${role.role}', ${role.salary}, ${result[0].id});`,
+                (err, result) => {
+                    if (err) throw err;
+            
+                    console.log('\nRole successfully added.');
+            });
     });
+
 }
 
 const insertEmployee = (employee) => {
-    const roleId = connection.promise().query(`SELECT id FROM role
-                WHERE role.title = ${employee.role}`,
-                (err, result) => {
-                    if (err) throw err;
-            
-                    return result[0].id;
-    });
-
-    const managerId = connection.promise().query(`SELECT id FROM employee
-                WHERE employee.first_name = ${employee.firstName}
-                AND employee.last_name = ${employee.lastName};`,
-                (err, result) => {
-                    if (err) throw err;
-            
-                    return result[0].id;
-    });
-
-    connection.promise().query(`INSERT INTO employee
-        VALUES (${employee.firstName}, ${employee.lastName}, ${roleId}, ${managerId});`,
+    connection.promise().query(`SELECT id FROM role
+        WHERE role.title = ${employee.role}`,
         (err, result) => {
             if (err) throw err;
     
-            console.log('Employee successfully added.');
+            connection.promise().query(`SELECT id FROM employee
+                WHERE employee.first_name = ${employee.firstName}
+                AND employee.last_name = ${employee.lastName};`,
+                (err, result1) => {
+                    if (err) throw err;
+            
+                    connection.promise().query(`INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                        VALUES ('${employee.firstName}', '${employee.lastName}', ${result[0].id}, ${result1[0].id});`,
+                        (err, result2) => {
+                            if (err) throw err;
+                    
+                            console.log('\nEmployee successfully added.');
+                    });
+            });
     });
+
+
 
 }
 
 const updateEmployee = (employee) => {
     const name = employee.split(' ');
-    const roleId = connection.promise().query(`SELECT id FROM role
-                WHERE role.title = ${employee.role}`,
-                (err, result) => {
-                    if (err) throw err;
-            
-                    return result[0].id;
-    });
-
-    connection.promise().query(`UPDATE employee
-        SET role_id = ${roleId}
-        WHERE employee.first_name = ${name[0]}
-        AND employee.last_name = ${name[1]};`,
+    connection.promise().query(`SELECT id FROM role
+        WHERE role.title = ${employee.role}`,
         (err, result) => {
             if (err) throw err;
     
-            console.log('Employee successfully updated.');
+            connection.promise().query(`UPDATE employee
+                SET role_id = ${result[0].id}
+                WHERE employee.first_name = '${name[0]}'
+                AND employee.last_name = '${name[1]}';`,
+                (err, result) => {
+                    if (err) throw err;
+            
+                    console.log('\nEmployee successfully updated.');
+            });
     });
+
 
 }
 

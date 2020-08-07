@@ -28,12 +28,51 @@ const start = () => {
                     });
             }
             else if(choice.option == 'Add a role') {
-                inquirer
-                    .prompt(addRolePrompt)
-                    .then(role => {
-                        insertRole(role);
-                        start();
-                    });
+
+                connection.promise().query(`SELECT name FROM department;`, 
+                (err, result) => {
+                    if (err) throw err;
+
+                    inquirer
+                        .prompt([
+                            {
+                                type: 'input',
+                                name: 'role',
+                                message: 'Enter the name of the role.',
+                                validate: input => {
+                                    if (input) {
+                                        return true;
+                                    } else {
+                                        console.log('\nPlease enter the name of the role.');
+                                        return false;
+                                    }
+                                }
+                            },
+                            {
+                                type: 'input',
+                                name: 'salary',
+                                message: 'Enter the salary of the role.',
+                                validate: input => {
+                                    if (input) {
+                                        return true;
+                                    } else {
+                                        console.log('\nPlease enter the salary of the role.');
+                                        return false;
+                                    }
+                                }
+                            },
+                            {
+                                type: 'list',
+                                name: 'dept',
+                                message: 'Enter the department of the role.',
+                                choices: result.map(res => res.name)
+                            }
+                        ])
+                        .then(role => {
+                            insertRole(role);
+                            start();
+                        });
+                });
             }
             else if(choice.option == 'Add an employee') {
                 inquirer
