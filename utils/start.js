@@ -1,7 +1,7 @@
 const inquirer = require('inquirer');
-const { initialPrompt, addDeptPrompt, addRolePrompt, addEmployeePrompt, updateEmployeePrompt } = require('./prompts');
-const { getDepts, getRoles, getEmployees, insertDept, insertRole, insertEmployee, updateEmployee } = require('./queries');
 const connection = require('../db/database');
+const { initialPrompt, addDeptPrompt } = require('./prompts');
+const { getDepts, getRoles, getEmployees, insertDept, insertRole, insertEmployee, updateEmployee } = require('./queries');
 
 const start = () => {
     return inquirer
@@ -28,7 +28,6 @@ const start = () => {
                     });
             }
             else if(choice.option == 'Add a role') {
-
                 connection.promise().query(`SELECT name FROM department;`, 
                 (err, result) => {
                     if (err) throw err;
@@ -74,21 +73,88 @@ const start = () => {
                         });
                 });
             }
-            else if(choice.option == 'Add an employee') {
-                inquirer
-                    .prompt(addEmployeePrompt)
-                    .then(employee => {
-                        insertEmployee(employee);
-                        start();
-                    });
+            else if(choice.option == 'Add an employee.') {
+                connection.promise().query(`SELECT title, CONCAT(first_name, ' ', last_name) AS 'name' 
+                FROM role r
+                INNER JOIN employee e
+                ON r.id = e.role_id;`, 
+                (err, result) => {
+                    if (err) throw err;
+
+                    inquirer
+                        .prompt([
+                            {
+                                type: 'input',
+                                name: 'firstName',
+                                message: 'Enter the employee\'s first name',
+                                validate: input => {
+                                    if (input) {
+                                        return true;
+                                    } else {
+                                        console.log('\nPlease enter the first name of the employee.');
+                                        return false;
+                                    }
+                                }
+                            },
+                            {
+                                type: 'input',
+                                name: 'lastName',
+                                message: 'Enter the employee\'s last name',
+                                validate: input => {
+                                    if (input) {
+                                        return true;
+                                    } else {
+                                        console.log('\nPlease enter the last name of the employee.');
+                                        return false;
+                                    }
+                                }
+                            },
+                            {
+                                type: 'list',
+                                name: 'role',
+                                message: 'Choose the employee\'s role',
+                                choices: result.map(res => res.title)
+                            },
+                            {
+                                type: 'list',
+                                name: 'manager',
+                                message: 'Choose the employee\'s manager',
+                                choices: result.map(res => res.name)
+                            }
+                        ])
+                        .then(employee => {
+                            insertEmployee(employee);
+                            start();
+                        });
+                });
             }
             else if(choice.option == 'Update an employee role') {
-                inquirer
-                    .prompt(updateEmployeePrompt)
-                    .then(employee => {
-                        updateEmployee(employee);
-                        start();
-                    });
+                connection.promise().query(`SELECT title, CONCAT(first_name, ' ', last_name) AS 'name' 
+                FROM role r
+                INNER JOIN employee e
+                ON r.id = e.role_id;`,
+                (err, result) => {
+                    if (err) throw err;
+                    inquirer
+                        .prompt([
+                            {
+                                type: 'list',
+                                name: 'employee',
+                                message: 'Choose the employee to update',
+                                choices: result.map(res => res.name)
+                            },
+                            {
+                                type: 'list',
+                                name: 'role',
+                                message: 'Choose the role of the employee',
+                                choices: result.map(res => res.title)
+                            }
+                        ])
+                        .then(employee => {
+                            updateEmployee(employee);
+                            start();
+                        });
+                });
             }
             else {
                 connection.end();
