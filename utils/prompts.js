@@ -14,7 +14,7 @@ const initialPrompt = [
             'Add a department',
             'Add a role',
             'Add an employee',
-            'Update an employee role',
+            'Update an employee\'s role',
             'Update an employee\'s manager',
             'Delete a department',
             'Delete a role',

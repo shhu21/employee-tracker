@@ -1,7 +1,7 @@
 const connection = require('../db/database');
 
 const getDepts = () => {
-    connection.promise().query(`SELECT * FROM department;`,
+    connection.promise().query(`SELECT id, name AS Department FROM department;`,
         (err, result) => {
             if (err) throw err;
             console.log('\n');
@@ -12,7 +12,7 @@ const getDepts = () => {
 
 const getRoles = () => {
     connection.promise().query(
-        `SELECT r.id, r.title, r.salary, name AS 'Department' 
+        `SELECT r.id, r.title AS Title, r.salary AS Salary, name AS 'Department' 
             FROM role r 
             LEFT JOIN department d 
             ON r.department_id = d.id;`,
@@ -26,7 +26,12 @@ const getRoles = () => {
 
 const getEmployees = () => {
     connection.promise().query(
-        `SELECT e.id, e.first_name, e.last_name, title, salary, name AS 'Department', CONCAT(m.first_name, ' ', m.last_name) AS 'Manager'
+        `SELECT 
+        e.id, 
+        CONCAT (e.first_name, ' ', e.last_name) AS Employee, 
+        title AS Title, salary AS Salary, 
+        name AS 'Department', 
+        CONCAT(m.first_name, ' ', m.last_name) AS 'Manager'
             FROM employee e
             LEFT JOIN role r
             ON e.role_id = r.id
@@ -43,11 +48,39 @@ const getEmployees = () => {
 }
 
 const employeesByManager = (manager) => {
-
+    const managerName = manager.split(' ');
+    connection.promise().query(
+        `SELECT CONCAT (e.first_name, '  ', e.last_name) AS Employee 
+            FROM employee m 
+            INNER JOIN employee e 
+            ON e.manager_id = m.id
+            AND m.first_name = '${managerName[0]}'
+            AND m.last_name = '${managerName[1]}';`,
+        (err, result) => {
+            if (err) throw err;
+            
+            console.log(`\nEmployees under Manager ${manager}:`);
+            console.table(result);
+        }
+    );
 }
 
 const employeesByDept = (dept) => {
-
+    connection.promise().query(
+        `SELECT name AS Department, CONCAT (first_name, ' ', last_name) AS Employee 
+            FROM employee e 
+            INNER JOIN role r 
+            ON e.role_id = r.id 
+            INNER JOIN department d 
+            ON r.department_id = d.id 
+            AND d.name = '${dept}';`,
+        (err, result) => {
+            if (err) throw err;
+    
+            console.log(`\nEmployees under Department ${dept}:`);
+            console.table(result);
+        }
+    );
 }
 
 const insertDept = (dept) => {
@@ -56,7 +89,7 @@ const insertDept = (dept) => {
         (err, result) => {
             if (err) throw err;
     
-            console.log('\nDepartment successfully added.');
+            console.log(`\n${dept} was successfully added.`);
         }
     );
 }
@@ -73,7 +106,7 @@ const insertRole = (role) => {
         (err, result) => {
             if (err) throw err;
             
-            console.log('\nRole successfully added.');
+            console.log(`\n${role.role} was successfully added.`);
         }
     );
 
@@ -96,13 +129,13 @@ const insertEmployee = (employee) => {
         (err, result) => {
             if (err) throw err;
                     
-            console.log('\nEmployee successfully added.');
+            console.log(`\n${employee.firstName} ${employee.lastName} was successfully added.`);
         }
     );
 
 }
 
-const updateEmployee = (employee) => {
+const updateEmployeeRole = (employee) => {
     const name = employee.employee.split(' ');
 
     connection.promise().query(`
@@ -113,27 +146,83 @@ const updateEmployee = (employee) => {
         (err, result) => {
             if (err) throw err;
     
-            console.log('\nEmployee successfully updated.');
+            console.log(`\n${employee.employee}'s role is now ${employee.role}.`);
+        }
+    );
+}
+
+const updateEmployeeManager = (employee) => {
+    const manager = employee.manager.split(' ');
+
+    connection.promise().query(`
+        UPDATE employee e
+            SET e.manager_id = (SELECT id FROM employee m WHERE m.first_name = '${manager[0]}' AND m.last_name = '${manager[1]}')`,
+        (err, result) => {
+            if (err) throw err;
+    
+            console.log(`\n${employee.employee}'s manager is now ${employee.manager}.`);
         }
     );
 }
 
 const deleteDept = (dept) => {
+    connection.promise().query(`DELETE FROM department WHERE name = '${dept}';`,
+        (err, result) => {
+            if (err) throw err;
+
+            console.log(`\nDepartment ${dept} has been deleted.`);
+        }
+    );
 
 }
 
 const deleteRole = (role) => {
+    connection.promise().query(`DELETE FROM role WHERE title = '${role}';`,
+        (err, result) => {
+            if (err) throw err;
 
+            console.log(`\Role ${role} has been deleted.`);
+        }
+    );
 }
 
 const deleteEmployee = (name) => {
+    const employee = name.split(' ');
+
+    connection.promise().query(
+        `DELETE 
+            FROM employee 
+            WHERE first_name = '${employee[0]}' 
+            AND last_name = '${employee[1]}';`,
+        (err, result) => {
+            if (err) throw err;
+
+            console.log(`\nEmployee ${name} has been deleted.`);
+        }
+    );
 
 }
 
 const deptBudget = (dept) => {
+    connection.promise().query(
+        `SELECT salary 
+            FROM employee e 
+            INNER JOIN role r 
+                ON e.role_id = r.id 
+            INNER JOIN department d 
+                ON r.department_id = d.id 
+                AND d.name = '${dept}';`,
+        (err, result) => {
+            if (err) throw err;
 
+            let salary = 0;
+            result.forEach(res => salary += parseInt(res.salary));
+
+            console.log(`\nThe total utilized budget of Department ${dept} is $${salary}.`);
+        }
+    );
 }
 
-module.exports = { getDepts, getRoles, getEmployees, employeesByManager, employeesByDept, insertDept, insertRole, insertEmployee, updateEmployee, deleteDept, deleteRole, deleteEmployee, deptBudget };
+module.exports = { getDepts, getRoles, getEmployees, employeesByManager, employeesByDept, insertDept, insertRole, insertEmployee, updateEmployeeRole, updateEmployeeManager, deleteDept, deleteRole, deleteEmployee, deptBudget };
 
 // TODO: move query strings into new file

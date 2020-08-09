@@ -177,7 +177,7 @@ const start = () => {
                     }
                 );
             }
-            else if(choice.option == 'Update an employee role') {
+            else if(choice.option == 'Update an employee\'s role') {
                 connection.promise().query(
                     `SELECT title, CONCAT(first_name, ' ', last_name) AS 'name' 
                         FROM role r
@@ -202,7 +202,7 @@ const start = () => {
                                 }
                             ])
                             .then(employee => {
-                                updateEmployee(employee);
+                                updateEmployeeRole(employee);
                                 start();
                             }
                         );
@@ -210,7 +210,6 @@ const start = () => {
                 );
             }
             else if(choice.option == 'Update an employee\'s manager') {
-                // TODO: test query
                 connection.promise().query(
                     `SELECT CONCAT (m.first_name, ' ', m.last_name) AS manager, CONCAT (e.first_name, ' ', e.last_name) AS employee 
                         FROM employee e 
@@ -228,13 +227,13 @@ const start = () => {
                                 },
                                 {
                                     type: 'list',
-                                    name: 'role',
+                                    name: 'manager',
                                     message: 'Choose the manager of the employee',
                                     choices: [...new Set(result.map(res => res.manager))]
                                 }
                             ])
                             .then(employee => {
-                                updateEmployee(employee);
+                                updateEmployeeManager(employee);
                                 start();
                             }
                         );
@@ -330,25 +329,3 @@ const start = () => {
 module.exports = start;
 
 // TODO : fix UI
-
-// TODO: add bonus queries
-    // Update employee managers.
-        // use the view employees by manager query to set the inquirer prompt
-        // create an update function in queries.js
-
-    // View employees by manager.
-        // SELECT DISTINCT m.first_name, m.last_name FROM employee m INNER JOIN employee e ON e.manager_id = m.id;
-
-    // View employees by department.
-        // select name, firstname, lastname left join department on employes where role_id = r.id, r.department_id = d.id
-        // SELECT name, first_name, last_name FROM employee e INNER JOIN role r ON e.role_id = r.id INNER JOIN department d ON r.department_id = d.id AND d.name = 'variable';
-
-    // Delete departments, roles, and employees.
-        // select department names, role names, employee names,
-            // separate prompts and quereies
-
-    // View the total utilized budget of a department—i.e., the combined salaries of all employees in that department.
-        // select name from department for the prompt list
-        // make a function in queries.js
-            // SELECT salary FROM employee e INNER JOIN role r ON e.role_id = r.id INNER JOIN department d ON r.department_id = d.id AND d.name = 'Engineering';
-            // sum the salaries and console.log
