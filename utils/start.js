@@ -1,7 +1,7 @@
 const inquirer = require('inquirer');
 const connection = require('../db/database');
 const { initialPrompt, addDeptPrompt } = require('./prompts');
-const { getDepts, getRoles, getEmployees, insertDept, insertRole, insertEmployee, updateEmployee } = require('./queries');
+const { getDepts, getRoles, getEmployees, employeesByManager, employeesByDept, insertDept, insertRole, insertEmployee, updateEmployee, deleteDept, deleteRole, deleteEmployee, deptBudget } = require('./queries');
 
 const start = () => {
     return inquirer
@@ -18,6 +18,50 @@ const start = () => {
             else if(choice.option == 'View all employees') {
                 getEmployees();
                 start();
+            }
+            else if(choice.option == 'View employees by manager') {
+                connection.promise().query(
+                    `SELECT DISTINCT CONCAT (m.first_name, ' ', m.last_name) AS manager 
+                        FROM employee m 
+                        INNER JOIN employee e 
+                        ON e.manager_id = m.id;`,
+                (err, result) => {
+                    if (err) throw err;
+                    inquirer
+                        .prompt([
+                            {
+                                type: 'list',
+                                name: 'manager',
+                                message: 'Select a manager to view',
+                                choices: result.map(res => res.manager)
+                            }
+                        ])
+                        .then(manager => {
+                            employeesByManager(manager.manager);
+                            start();
+                        }
+                    );
+                });
+            }
+            else if(choice.option == 'View employees by department') {
+                connection.promise().query(`SELECT name FROM department;`,
+                (err, result) => {
+                    if (err) throw err;
+                    inquirer
+                        .prompt([
+                            {
+                                type: 'list',
+                                name: 'dept',
+                                message: 'Select a department to view',
+                                choices: result.map(res => res.name)
+                            }
+                        ])
+                        .then(dept => {
+                            employeesByDept(dept.dept);
+                            start();
+                        }
+                    );
+                });
             }
             else if(choice.option == 'Add a department') {
                 inquirer
@@ -165,6 +209,117 @@ const start = () => {
                     }
                 );
             }
+            else if(choice.option == 'Update an employee\'s manager') {
+                // TODO: test query
+                connection.promise().query(
+                    `SELECT CONCAT (m.first_name, ' ', m.last_name) AS manager, CONCAT (e.first_name, ' ', e.last_name) AS employee 
+                        FROM employee e 
+                        INNER JOIN employee m
+                        ON e.manager_id = m.id;`,
+                    (err, result) => {
+                        if (err) throw err;
+                        inquirer
+                            .prompt([
+                                {
+                                    type: 'list',
+                                    name: 'employee',
+                                    message: 'Choose the employee to update',
+                                    choices: result.map(res => res.employee)
+                                },
+                                {
+                                    type: 'list',
+                                    name: 'role',
+                                    message: 'Choose the manager of the employee',
+                                    choices: [...new Set(result.map(res => res.manager))]
+                                }
+                            ])
+                            .then(employee => {
+                                updateEmployee(employee);
+                                start();
+                            }
+                        );
+                    });
+            }
+            else if(choice.option == 'Delete a department') {
+                connection.promise().query(`SELECT name FROM department;`,
+                (err, result) => {
+                    if (err) throw err;
+                    inquirer
+                        .prompt([
+                            {
+                                type: 'list',
+                                name: 'dept',
+                                message: 'Select a department to delete',
+                                choices: result.map(res => res.name)
+                            }
+                        ])
+                        .then(dept => {
+                            deleteDept(dept.dept);
+                            start();
+                        }
+                    );
+                });
+            }
+            else if(choice.option == 'Delete a role') {
+                connection.promise().query(`SELECT title FROM role;`,
+                (err, result) => {
+                    if (err) throw err;
+                    inquirer
+                        .prompt([
+                            {
+                                type: 'list',
+                                name: 'role',
+                                message: 'Select a role to delete',
+                                choices: result.map(res => res.title)
+                            }
+                        ])
+                        .then(role => {
+                            deleteRole(role.role);
+                            start();
+                        }
+                    );
+                });
+            }
+            else if(choice.option == 'Delete an employee') {
+                connection.promise().query(`SELECT CONCAT (first_name, ' ', last_name) AS name FROM employee;`,
+                    (err, result) => {
+                        if (err) throw err;
+                        inquirer
+                            .prompt([
+                                {
+                                    type: 'list',
+                                    name: 'name',
+                                    message: 'Select an employee to delete',
+                                    choices: result.map(res => res.name)
+                                }
+                            ])
+                            .then(employee => {
+                                deleteEmployee(employee.name);
+                                start();
+                            }
+                        );
+                    });
+            }
+            else if(choice.option == 'View the total utilized budget of a department') {
+                connection.promise().query(`SELECT name FROM department;`,
+                (err, result) => {
+                    if (err) throw err;
+                    inquirer
+                        .prompt([
+                            {
+                                type: 'list',
+                                name: 'dept',
+                                message: 'Select a department\'s budget to view',
+                                choices: result.map(res => res.name)
+                            }
+                        ])
+                        .then(dept => {
+                            deptBudget(dept.dept);
+                            start();
+                        }
+                    );
+                });
+            }
             else {
                 connection.end();
                 return;
@@ -182,10 +337,11 @@ module.exports = start;
         // create an update function in queries.js
 
     // View employees by manager.
-        // probably select distinct name from employee where id = manager_id
+        // SELECT DISTINCT m.first_name, m.last_name FROM employee m INNER JOIN employee e ON e.manager_id = m.id;
 
     // View employees by department.
         // select name, firstname, lastname left join department on employes where role_id = r.id, r.department_id = d.id
+        // SELECT name, first_name, last_name FROM employee e INNER JOIN role r ON e.role_id = r.id INNER JOIN department d ON r.department_id = d.id AND d.name = 'variable';
 
     // Delete departments, roles, and employees.
         // select department names, role names, employee names,
@@ -194,5 +350,5 @@ module.exports = start;
     // View the total utilized budget of a department—i.e., the combined salaries of all employees in that department.
         // select name from department for the prompt list
         // make a function in queries.js
-            // select salary from role left join department on role_id = d.id
+            // SELECT salary FROM employee e INNER JOIN role r ON e.role_id = r.id INNER JOIN department d ON r.department_id = d.id AND d.name = 'Engineering';
             // sum the salaries and console.log

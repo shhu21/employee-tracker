@@ -42,6 +42,14 @@ const getEmployees = () => {
     );
 }
 
+const employeesByManager = (manager) => {
+
+}
+
+const employeesByDept = (dept) => {
+
+}
+
 const insertDept = (dept) => {
     connection.promise().query(`INSERT INTO department(name)
         VALUES ('${dept}');`,
@@ -110,4 +118,22 @@ const updateEmployee = (employee) => {
     );
 }
 
-module.exports = { getDepts, getRoles, getEmployees, insertDept, insertRole, insertEmployee, updateEmployee };
+const deleteDept = (dept) => {
+
+}
+
+const deleteRole = (role) => {
+
+}
+
+const deleteEmployee = (name) => {
+
+}
+
+const deptBudget = (dept) => {
+
+}
+
+module.exports = { getDepts, getRoles, getEmployees, employeesByManager, employeesByDept, insertDept, insertRole, insertEmployee, updateEmployee, deleteDept, deleteRole, deleteEmployee, deptBudget };
+
+// TODO: move query strings into new file

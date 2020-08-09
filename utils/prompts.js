@@ -9,10 +9,17 @@ const initialPrompt = [
             'View all departments',
             'View all roles',
             'View all employees',
+            'View employees by manager',
+            'View employees by department',
             'Add a department',
             'Add a role',
             'Add an employee',
             'Update an employee role',
+            'Update an employee\'s manager',
+            'Delete a department',
+            'Delete a role',
+            'Delete an employee',
+            'View the total utilized budget of a department',
             'Quit'
         ]
     }
