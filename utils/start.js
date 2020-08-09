@@ -1,7 +1,11 @@
 const inquirer = require('inquirer');
 const connection = require('../db/database');
+// Prompts
 const { initialPrompt, addDeptPrompt } = require('./prompts');
-const { getDepts, getRoles, getEmployees, employeesByManager, employeesByDept, insertDept, insertRole, insertEmployee, updateEmployee, deleteDept, deleteRole, deleteEmployee, deptBudget } = require('./queries');
+// Callback functions to access/update the database
+const { getDepts, getRoles, getEmployees, employeesByManager, employeesByDept, insertDept, insertRole, insertEmployee, updateEmployeeRole, updateEmployeeManager, deleteDept, deleteRole, deleteEmployee, deptBudget } = require('./accessDB');
+// query strings
+const { viewAllDeptsQ, viewAllRolesQ, viewAllEmployeesQ, managerListQ, employeesByManagerQ, deptListQ, employeesByDeptQ, insertDeptQ, insertRoleQ, rolesAndEmployeesQ, insertEmployeeQ, updateRoleQ, employeesAndManagerQ, updateManagerQ, deleteDeptQ, roleListQ, deleteRoleQ, employeeListQ, deleteEmployeeQ, deptSalariesQ } = require('./queries');
 
 const start = () => {
     return inquirer
@@ -20,11 +24,7 @@ const start = () => {
                 start();
             }
             else if(choice.option == 'View employees by manager') {
-                connection.promise().query(
-                    `SELECT DISTINCT CONCAT (m.first_name, ' ', m.last_name) AS manager 
-                        FROM employee m 
-                        INNER JOIN employee e 
-                        ON e.manager_id = m.id;`,
+                connection.promise().query(managerListQ(),
                 (err, result) => {
                     if (err) throw err;
                     inquirer
@@ -32,7 +32,7 @@ const start = () => {
                             {
                                 type: 'list',
                                 name: 'manager',
-                                message: 'Select a manager to view',
+                                message: 'Select a manager to view:',
                                 choices: result.map(res => res.manager)
                             }
                         ])
@@ -44,7 +44,7 @@ const start = () => {
                 });
             }
             else if(choice.option == 'View employees by department') {
-                connection.promise().query(`SELECT name FROM department;`,
+                connection.promise().query(deptListQ(),
                 (err, result) => {
                     if (err) throw err;
                     inquirer
@@ -52,7 +52,7 @@ const start = () => {
                             {
                                 type: 'list',
                                 name: 'dept',
-                                message: 'Select a department to view',
+                                message: 'Select a department to view:',
                                 choices: result.map(res => res.name)
                             }
                         ])
@@ -72,7 +72,7 @@ const start = () => {
                     });
             }
             else if(choice.option == 'Add a role') {
-                connection.promise().query(`SELECT name FROM department;`, 
+                connection.promise().query(deptListQ(), 
                     (err, result) => {
                         if (err) throw err;
 
@@ -81,7 +81,7 @@ const start = () => {
                                 {
                                     type: 'input',
                                     name: 'role',
-                                    message: 'Enter the name of the role.',
+                                    message: 'Enter the name of the role:',
                                     validate: input => {
                                         if (input) {
                                             return true;
@@ -94,7 +94,7 @@ const start = () => {
                                 {
                                     type: 'input',
                                     name: 'salary',
-                                    message: 'Enter the salary of the role.',
+                                    message: 'Enter the salary of the role:',
                                     validate: input => {
                                         if (input) {
                                             return true;
@@ -107,24 +107,18 @@ const start = () => {
                                 {
                                     type: 'list',
                                     name: 'dept',
-                                    message: 'Enter the department of the role.',
+                                    message: 'Select the department of the role:',
                                     choices: result.map(res => res.name)
                                 }
                             ])
                             .then(role => {
                                 insertRole(role);
                                 start();
-                            }
-                        );
-                    }
-                );
+                            });
+                    });
             }
             else if(choice.option == 'Add an employee') {
-                connection.promise().query(
-                    `SELECT DISTINCT title, CONCAT(first_name, ' ', last_name) AS 'name' 
-                        FROM role r
-                        INNER JOIN employee e
-                        ON r.id = e.role_id;`, 
+                connection.promise().query(rolesAndEmployeesQ(), 
                     (err, result) => {
                         if (err) throw err;
 
@@ -133,7 +127,7 @@ const start = () => {
                                 {
                                     type: 'input',
                                     name: 'firstName',
-                                    message: 'Enter the employee\'s first name',
+                                    message: 'Enter the employee\'s first name:',
                                     validate: input => {
                                         if (input) {
                                             return true;
@@ -146,7 +140,7 @@ const start = () => {
                                 {
                                     type: 'input',
                                     name: 'lastName',
-                                    message: 'Enter the employee\'s last name',
+                                    message: 'Enter the employee\'s last name:',
                                     validate: input => {
                                         if (input) {
                                             return true;
@@ -159,30 +153,24 @@ const start = () => {
                                 {
                                     type: 'list',
                                     name: 'role',
-                                    message: 'Choose the employee\'s role',
+                                    message: 'Select the employee\'s role:',
                                     choices: [...new Set(result.map(res => res.title))]
                                 },
                                 {
                                     type: 'list',
                                     name: 'manager',
-                                    message: 'Choose the employee\'s manager',
+                                    message: 'Select the employee\'s manager:',
                                     choices: result.map(res => res.name)
                                 }
                             ])
                             .then(employee => {
                                 insertEmployee(employee);
                                 start();
-                            }
-                        );
-                    }
-                );
+                            });
+                    });
             }
             else if(choice.option == 'Update an employee\'s role') {
-                connection.promise().query(
-                    `SELECT title, CONCAT(first_name, ' ', last_name) AS 'name' 
-                        FROM role r
-                        INNER JOIN employee e
-                        ON r.id = e.role_id;`,
+                connection.promise().query(rolesAndEmployeesQ(),
                     (err, result) => {
                         if (err) throw err;
                         
@@ -191,30 +179,24 @@ const start = () => {
                                 {
                                     type: 'list',
                                     name: 'employee',
-                                    message: 'Choose the employee to update',
+                                    message: 'Select the employee to update:',
                                     choices: result.map(res => res.name)
                                 },
                                 {
                                     type: 'list',
                                     name: 'role',
-                                    message: 'Choose the role of the employee',
+                                    message: 'Select the role of the employee:',
                                     choices: [...new Set(result.map(res => res.title))]
                                 }
                             ])
                             .then(employee => {
                                 updateEmployeeRole(employee);
                                 start();
-                            }
-                        );
-                    }
-                );
+                            });
+                    });
             }
             else if(choice.option == 'Update an employee\'s manager') {
-                connection.promise().query(
-                    `SELECT CONCAT (m.first_name, ' ', m.last_name) AS manager, CONCAT (e.first_name, ' ', e.last_name) AS employee 
-                        FROM employee e 
-                        INNER JOIN employee m
-                        ON e.manager_id = m.id;`,
+                connection.promise().query(employeesAndManagerQ(),
                     (err, result) => {
                         if (err) throw err;
                         inquirer
@@ -222,13 +204,13 @@ const start = () => {
                                 {
                                     type: 'list',
                                     name: 'employee',
-                                    message: 'Choose the employee to update',
+                                    message: 'Select the employee to update:',
                                     choices: result.map(res => res.employee)
                                 },
                                 {
                                     type: 'list',
                                     name: 'manager',
-                                    message: 'Choose the manager of the employee',
+                                    message: 'Select the manager of the employee:',
                                     choices: [...new Set(result.map(res => res.manager))]
                                 }
                             ])
@@ -240,7 +222,7 @@ const start = () => {
                     });
             }
             else if(choice.option == 'Delete a department') {
-                connection.promise().query(`SELECT name FROM department;`,
+                connection.promise().query(deptList(),
                 (err, result) => {
                     if (err) throw err;
                     inquirer
@@ -248,7 +230,7 @@ const start = () => {
                             {
                                 type: 'list',
                                 name: 'dept',
-                                message: 'Select a department to delete',
+                                message: 'Select a department to delete:',
                                 choices: result.map(res => res.name)
                             }
                         ])
@@ -260,7 +242,7 @@ const start = () => {
                 });
             }
             else if(choice.option == 'Delete a role') {
-                connection.promise().query(`SELECT title FROM role;`,
+                connection.promise().query(roleListQ(),
                 (err, result) => {
                     if (err) throw err;
                     inquirer
@@ -268,7 +250,7 @@ const start = () => {
                             {
                                 type: 'list',
                                 name: 'role',
-                                message: 'Select a role to delete',
+                                message: 'Select a role to delete:',
                                 choices: result.map(res => res.title)
                             }
                         ])
@@ -280,7 +262,7 @@ const start = () => {
                 });
             }
             else if(choice.option == 'Delete an employee') {
-                connection.promise().query(`SELECT CONCAT (first_name, ' ', last_name) AS name FROM employee;`,
+                connection.promise().query(employeeListQ(),
                     (err, result) => {
                         if (err) throw err;
                         inquirer
@@ -288,7 +270,7 @@ const start = () => {
                                 {
                                     type: 'list',
                                     name: 'name',
-                                    message: 'Select an employee to delete',
+                                    message: 'Select an employee to delete:',
                                     choices: result.map(res => res.name)
                                 }
                             ])
@@ -300,7 +282,7 @@ const start = () => {
                     });
             }
             else if(choice.option == 'View the total utilized budget of a department') {
-                connection.promise().query(`SELECT name FROM department;`,
+                connection.promise().query(deptListQ(),
                 (err, result) => {
                     if (err) throw err;
                     inquirer
@@ -308,7 +290,7 @@ const start = () => {
                             {
                                 type: 'list',
                                 name: 'dept',
-                                message: 'Select a department\'s budget to view',
+                                message: 'Select a department\'s budget to view:',
                                 choices: result.map(res => res.name)
                             }
                         ])
@@ -327,5 +309,3 @@ const start = () => {
 }
 
 module.exports = start;
-
-// TODO : fix UI

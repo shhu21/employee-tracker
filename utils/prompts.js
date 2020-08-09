@@ -1,4 +1,4 @@
-// Prompts
+// Prompts that do not require access to the database
 
 const initialPrompt = [
     {

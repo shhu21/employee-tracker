@@ -9,5 +9,6 @@ connection.connect(err => {
 });
   
 afterConnection = () => {
+    // start the prompts
     start();
 };
