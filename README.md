@@ -8,6 +8,21 @@
 * [Description](#description)
 * [Installation](#installation)
 * [User's Guide](#users-guide)
+  - [View all departments](#view-all-departments)
+  - [View all roles](#view-all-roles)
+  - [View all employees](#view-all-employees)
+  - [View employees by manager](#view-employees-by-manager)
+  - [View employees by department](#view-employees-by-department)
+  - [Add a department](#add-a-department)
+  - [Add a role](#add-a-role)
+  - [Add an employee](#add-an-employee)
+  - [Update an employee's role](#update-an-employees-role)
+  - [Update an employee's manager](#update-an-employees-manager)
+  - [Delete a department](#delete-a-department)
+  - [Delete a role](#delete-a-role)
+  - [Delete an employee](#delete-an-employee)
+  - [View the total utilized budget of a department](#view-the-total-utilized-budget-of-a-department)
+  - [Quit](#quit)
 
 # Description
 Builds a database to organize employees using user input from the command line.
@@ -23,52 +38,52 @@ As mentioned in the [Installation](#installation) instructions, run `npm start` 
 The following is a list of prompts for available feature:  </br>
 *Note: All prompts are required.*
 
-1. View all departments </br>
+## View all departments
 __Description:__ Displays a table of all departments. </br>
 __Columns:__ id, department
 
-2. View all roles </br>
+## View all roles
 __Description:__ Displays a table of all roles. </br>
 __Columns:__ id, title (role), salary, department
 
-3. View all employees </br>
+## View all employees
 __Description:__ Displays a table of all employees. </br>
 __Columns:__ employee name, title (role), salary, department
 
-4. View employees by manager </br>
+## View employees by manager
 __Description:__ Displays a table of employees by manager. </br>
 __Columns:__ employee
 
-5. View employees by department </br>
+## View employees by department
 __Description:__ Displays a table of employees by department. </br>
 __Columns:__ department, title, employee
 
-6. Add a department </br>
+## Add a department
 __Description:__ Adds a department.
 
-7. Add a role </br>
+## Add a role
 __Description:__ Adds a role.
 
-8. Add an employee </br>
+## Add an employee
 __Description:__ Adds an employee.
 
-9. Update an employee's role </br>
+## Update an employee's role
 __Description:__ Updates an employee's role.
 
-10. Update an employee's manager </br>
+## Update an employee's manager
 __Description:__ Updates an employee's manager.
 
-11. Delete a department </br>
+## Delete a department
 __Description:__ Deletes a department.
 
-12. Delete a role </br>
+## Delete a role
 __Description:__ Deletes a role.
 
-13. Delete an employee </br>
+## Delete an employee
 __Description:__ Deletes an employee.
 
-14. View the total utilized budget of a department </br>
+## View the total utilized budget of a department
 __Description:__ Displays the total budget of a department (sum of all employee's salaries in a department).
 
-15. Quit </br>
+## Quit
 __Description:__ Quits the program.
