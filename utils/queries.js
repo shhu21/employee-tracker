@@ -114,16 +114,16 @@ const updateRoleQ = (role, first, last) => {
 
 // List of managers and employees
 const employeesAndManagerQ = () => {
-    return `SELECT CONCAT (m.first_name, ' ', m.last_name) AS manager, CONCAT (e.first_name, ' ', e.last_name) AS employee 
+    return `SELECT CONCAT (m.first_name, ' ', m.last_name, ' (ID: ', m.id, ')') AS manager, CONCAT (e.first_name, ' ', e.last_name) AS employee 
     FROM employee e 
     INNER JOIN employee m
     ON e.manager_id = m.id;`;
 }
 
 // Update an employee's manager
-const updateManagerQ = (first, last) => {
-    return `UPDATE employee e
-        SET e.manager_id = (SELECT id FROM employee m WHERE m.first_name = '${first}' AND m.last_name = '${last}')`;
+const updateManagerQ = (id) => {
+    return `UPDATE employee 
+        SET manager_id = ${id};`;
 }
 
 // Delete a department
