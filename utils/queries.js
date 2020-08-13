@@ -121,9 +121,11 @@ const employeesAndManagerQ = () => {
 }
 
 // Update an employee's manager
-const updateManagerQ = (id) => {
+const updateManagerQ = (id, first, last) => {
     return `UPDATE employee 
-        SET manager_id = ${id};`;
+        SET manager_id=${id}
+        WHERE first_name='${first}'
+            AND last_name='${last}';`;
 }
 
 // Delete a department

@@ -87,8 +87,9 @@ const updateEmployeeRole = (employee) => {
 // Updates an employee's manager
 const updateEmployeeManager = (employee) => {
     const id = employee.manager.split(': ')[1].split(')')[0];
+    const employeeName = employee.employee.split(' ');
 
-    return connection.promise().query(updateManagerQ(id))
+    return connection.promise().query(updateManagerQ(id, employeeName[0], employeeName[1]))
     .then(result => {
         console.log(`\n${employee.employee}'s manager is now ${employee.manager}.`);
     });
