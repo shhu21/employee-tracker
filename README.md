@@ -1,7 +1,7 @@
 # employee-tracker
 
 # Demo
-[Demo Video]()
+[Demo Video](https://drive.google.com/file/d/1-hUfPmmsojVYBEgD8j8MyTe6z7uXMz-K/view)
 
 # Table Of Contents
 
@@ -23,6 +23,7 @@
   - [Delete an employee](#delete-an-employee)
   - [View the total utilized budget of a department](#view-the-total-utilized-budget-of-a-department)
   - [Quit](#quit)
+ * [Testing](#testing)
 
 # Description
 Builds a database to organize employees using user input from the command line.
@@ -87,3 +88,6 @@ __Description:__ Displays the total budget of a department (sum of all employee'
 
 ## Quit
 __Description:__ Quits the program.
+
+# Testing
+Template seed data is available in `./db/seeds.sql`.
